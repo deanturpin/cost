@@ -383,14 +383,14 @@
 
             // Dynamically adjust font size based on number length to prevent overflow
             const costText = costAmount.textContent;
-            const baseFontSize = 144;
             const isMobile = window.innerWidth <= 600;
 
             // Scale based on string length for desktop and mobile
-            let fontSize = baseFontSize;
+            let fontSize;
 
             if (isMobile) {
-                // Mobile scaling
+                // Mobile scaling - start smaller
+                fontSize = 80;
                 if (costText.length >= 6) fontSize = 70;
                 if (costText.length >= 7) fontSize = 60;
                 if (costText.length >= 8) fontSize = 50;
@@ -400,6 +400,7 @@
                 if (costText.length >= 15) fontSize = 30;
             } else {
                 // Desktop scaling - more generous
+                fontSize = 144;
                 if (costText.length >= 6) fontSize = 120;
                 if (costText.length >= 7) fontSize = 100;
                 if (costText.length >= 8) fontSize = 85;
