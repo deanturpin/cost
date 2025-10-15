@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calculate the real cost of meetings in real-time">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cost Calc">
+    <title>Meeting Cost Calculator</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .cost-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.5s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .cost-label {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .cost-amount {
+            font-size: 144px;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+            transition: all 0.3s ease;
+            line-height: 1.2;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .cost-display.intense {
+            animation: pulse 2s infinite;
+        }
+
+        .cost-display.very-intense {
+            animation: pulse 1s infinite;
+        }
+
+        .cost-display.extremely-intense {
+            animation: pulse 0.5s infinite;
+        }
+
+        .cost-time {
+            font-size: 32px;
+            opacity: 0.9;
+            margin-top: 20px;
+            font-weight: 300;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 500;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            margin-top: 25px;
+        }
+
+        button {
+            width: 100%;
+            padding: 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .toggle-button {
+            background: #10b981;
+            color: white;
+        }
+
+        .toggle-button:hover {
+            background: #059669;
+        }
+
+        .toggle-button.running {
+            background: #ef4444;
+        }
+
+        .toggle-button.running:hover {
+            background: #dc2626;
+        }
+
+        .meeting-type-info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+
+            .cost-display {
+                padding: 50px 30px;
+                min-height: 300px;
+            }
+
+            .cost-time {
+                font-size: 24px;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>COULD HAVE BEEN AN EMAIL</h1>
+
+        <div class="cost-display">
+            <div class="cost-amount" id="costAmount">£0.00</div>
+            <div class="cost-time" id="elapsedTime">00:00:00</div>
+        </div>
+
+        <div class="controls">
+            <div class="form-group">
+                <label for="startTime">Start Time</label>
+                <input type="datetime-local" id="startTime" />
+            </div>
+
+            <div class="form-group">
+                <label for="attendees">Attendees</label>
+                <input type="number" id="attendees" min="1" value="4" />
+            </div>
+
+            <div class="form-group full-width">
+                <label for="meetingType">Meeting Type</label>
+                <select id="meetingType">
+                    <option value="30000">Graduate meeting</option>
+                    <option value="40000">Dev team</option>
+                    <option value="50000" selected>Company briefing</option>
+                    <option value="75000">Management</option>
+                    <option value="100000">Director/VP</option>
+                    <option value="custom">Custom...</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width" id="customSalaryGroup" style="display: none;">
+                <label for="customSalary">Custom Salary (£)</label>
+                <input type="number" id="customSalary" min="1" value="50000" />
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="toggle-button" id="toggleButton">Start</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; font-size: 11px; color: rgba(255,255,255,0.6);">
+            Build: <span id="gitHash">__GIT_HASH__</span>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const WORKING_HOURS_PER_YEAR = 2080; // 52 weeks × 5 days × 8 hours
+        const SECONDS_PER_HOUR = 3600;
+
+        // State
+        let meetingActive = false;
+        let startTime = null;
+        let intervalId = null;
+
+        // Elements
+        const toggleButton = document.getElementById('toggleButton');
+        const costAmount = document.getElementById('costAmount');
+        const elapsedTime = document.getElementById('elapsedTime');
+        const startTimeInput = document.getElementById('startTime');
+        const attendeesInput = document.getElementById('attendees');
+        const meetingTypeSelect = document.getElementById('meetingType');
+        const customSalaryGroup = document.getElementById('customSalaryGroup');
+        const customSalaryInput = document.getElementById('customSalary');
+
+        // Initialize start time to now
+        function setCurrentTime() {
+            const now = new Date();
+            const offset = now.getTimezoneOffset() * 60000;
+            const localTime = new Date(now - offset);
+            startTimeInput.value = localTime.toISOString().slice(0, 16);
+        }
+
+        setCurrentTime();
+
+        // Show/hide custom salary input and update attendees based on meeting type
+        meetingTypeSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customSalaryGroup.style.display = 'block';
+            } else {
+                customSalaryGroup.style.display = 'none';
+            }
+
+            // Update attendees based on meeting type
+            const attendeeDefaults = {
+                '30000': 8,   // Graduate meeting
+                '40000': 4,   // Dev team
+                '50000': 100, // Company briefing
+                '75000': 6,   // Management
+                '100000': 3   // Director/VP
+            };
+
+            if (attendeeDefaults[this.value]) {
+                attendeesInput.value = attendeeDefaults[this.value];
+            }
+        });
+
+        // Calculate cost per second
+        function getCostPerSecond() {
+            const salary = meetingTypeSelect.value === 'custom'
+                ? parseInt(customSalaryInput.value)
+                : parseInt(meetingTypeSelect.value);
+            const attendees = parseInt(attendeesInput.value) || 1;
+
+            // Cost per second = (salary / working hours per year / seconds per hour) × attendees
+            return (salary / WORKING_HOURS_PER_YEAR / SECONDS_PER_HOUR) * attendees;
+        }
+
+        // Format currency - drop decimals for large amounts
+        function formatCurrency(amount) {
+            if (amount >= 100) {
+                return '£' + Math.floor(amount);
+            }
+            return '£' + amount.toFixed(2);
+        }
+
+        // Format time as HH:MM:SS
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // Get intensity class based on cost
+        function getIntensityClass(cost) {
+            if (cost < 50) return '';
+            if (cost < 100) return 'intense';
+            if (cost < 200) return 'very-intense';
+            return 'extremely-intense';
+        }
+
+        // Get colour based on cost
+        function getColourGradient(cost) {
+            // Start: blue/purple gradient
+            // £50+: orange tones
+            // £100+: red tones
+            // £200+: deep red/crimson
+            if (cost < 50) {
+                return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            } else if (cost < 100) {
+                return 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+            } else if (cost < 200) {
+                return 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+            } else {
+                return 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
+            }
+        }
+
+        // Update display
+        function updateDisplay() {
+            if (!meetingActive) return;
+
+            const now = new Date();
+            const elapsedMilliseconds = now - startTime;
+            const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
+            const cost = getCostPerSecond() * (elapsedMilliseconds / 1000); // Use precise milliseconds for cost
+
+            costAmount.textContent = formatCurrency(cost);
+            elapsedTime.textContent = formatTime(elapsedSeconds);
+
+            // Update intensity
+            const costDisplay = document.querySelector('.cost-display');
+            costDisplay.className = 'cost-display ' + getIntensityClass(cost);
+            costDisplay.style.background = getColourGradient(cost);
+
+            // Dynamically adjust font size based on number length to prevent overflow
+            const costText = costAmount.textContent;
+            const baseFontSize = 144;
+            const isMobile = window.innerWidth <= 600;
+
+            // Scale based on string length for desktop and mobile
+            let fontSize = baseFontSize;
+
+            if (isMobile) {
+                // Mobile scaling
+                if (costText.length >= 6) fontSize = 70;
+                if (costText.length >= 7) fontSize = 60;
+                if (costText.length >= 8) fontSize = 50;
+                if (costText.length >= 9) fontSize = 45;
+                if (costText.length >= 10) fontSize = 40;
+                if (costText.length >= 12) fontSize = 35;
+                if (costText.length >= 15) fontSize = 30;
+            } else {
+                // Desktop scaling - more generous
+                if (costText.length >= 6) fontSize = 120;
+                if (costText.length >= 7) fontSize = 100;
+                if (costText.length >= 8) fontSize = 85;
+                if (costText.length >= 9) fontSize = 70;
+                if (costText.length >= 10) fontSize = 60;
+                if (costText.length >= 12) fontSize = 50;
+                if (costText.length >= 15) fontSize = 40;
+            }
+
+            costAmount.style.fontSize = fontSize + 'px';
+        }
+
+        // Toggle meeting start/stop
+        toggleButton.addEventListener('click', function() {
+            if (!meetingActive) {
+                // Start meeting
+                const selectedTime = new Date(startTimeInput.value);
+
+                if (isNaN(selectedTime.getTime())) {
+                    alert('Please select a valid start time');
+                    return;
+                }
+
+                startTime = selectedTime;
+                meetingActive = true;
+
+                toggleButton.textContent = 'Stop';
+                toggleButton.classList.add('running');
+
+                // Update immediately
+                updateDisplay();
+
+                // Update 10 times per second for drama
+                intervalId = setInterval(updateDisplay, 100);
+            } else {
+                // Stop meeting
+                meetingActive = false;
+
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+
+                toggleButton.textContent = 'Start';
+                toggleButton.classList.remove('running');
+
+                // Final update
+                updateDisplay();
+            }
+        });
+
+        // Update cost calculation when inputs change (if meeting is active)
+        attendeesInput.addEventListener('input', function() {
+            if (meetingActive) updateDisplay();
+        });
+
+        meetingTypeSelect.addEventListener('change', function() {
+            if (meetingActive) updateDisplay();
+        });
+
+        customSalaryInput.addEventListener('input', function() {
+            if (meetingActive) updateDisplay();
+        });
+
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => console.log('ServiceWorker registered'))
+                    .catch(err => console.log('ServiceWorker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
