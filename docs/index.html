@@ -280,6 +280,14 @@
             if (meetingActive) updateDisplay();
         });
 
+        // Update start time and recalculate when changed during active meeting
+        startTimeInput.addEventListener('change', function() {
+            if (meetingActive) {
+                startTime = new Date(startTimeInput.value);
+                updateDisplay();
+            }
+        });
+
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
