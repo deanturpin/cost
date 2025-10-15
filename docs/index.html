@@ -416,6 +416,9 @@
         // Toggle meeting start/stop
         toggleButton.addEventListener('click', function() {
             if (!meetingActive) {
+                // Update start time to now when clicking Start
+                setCurrentTime();
+
                 // Start meeting
                 const selectedTime = new Date(startTimeInput.value);
 
