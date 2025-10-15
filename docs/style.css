@@ -97,9 +97,9 @@ h1 {
 
 .controls {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 15px;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .form-group {
@@ -132,40 +132,6 @@ input, select {
 input:focus, select:focus {
     outline: none;
     border-color: #667eea;
-}
-
-.button-group {
-    margin-top: 25px;
-}
-
-button {
-    width: 100%;
-    padding: 24px;
-    border: none;
-    border-radius: 12px;
-    font-size: 24px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.toggle-button {
-    background: #10b981;
-    color: white;
-}
-
-.toggle-button:hover {
-    background: #059669;
-}
-
-.toggle-button.running {
-    background: #ef4444;
-}
-
-.toggle-button.running:hover {
-    background: #dc2626;
 }
 
 .meeting-type-info {

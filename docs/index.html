@@ -26,11 +26,6 @@
 
         <div class="controls">
             <div class="form-group">
-                <label for="startTime">Start Time</label>
-                <input type="datetime-local" id="startTime" />
-            </div>
-
-            <div class="form-group">
                 <label for="attendees">Attendees</label>
                 <input type="number" id="attendees" min="1" value="4" />
             </div>
@@ -53,10 +48,6 @@
             </div>
         </div>
 
-        <div class="button-group">
-            <button class="toggle-button" id="toggleButton">Start</button>
-        </div>
-
         <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #999;">
             Build: <span id="gitHash">__GIT_HASH__</span>
         </div>
@@ -68,29 +59,17 @@
         const SECONDS_PER_HOUR = 3600;
 
         // State
-        let meetingActive = false;
-        let startTime = null;
+        let meetingActive = true; // Start immediately
+        let startTime = new Date(); // Start from now
         let intervalId = null;
 
         // Elements
-        const toggleButton = document.getElementById('toggleButton');
         const costAmount = document.getElementById('costAmount');
         const elapsedTime = document.getElementById('elapsedTime');
-        const startTimeInput = document.getElementById('startTime');
         const attendeesInput = document.getElementById('attendees');
         const meetingTypeSelect = document.getElementById('meetingType');
         const customSalaryGroup = document.getElementById('customSalaryGroup');
         const customSalaryInput = document.getElementById('customSalary');
-
-        // Initialize start time to now
-        function setCurrentTime() {
-            const now = new Date();
-            const offset = now.getTimezoneOffset() * 60000;
-            const localTime = new Date(now - offset);
-            startTimeInput.value = localTime.toISOString().slice(0, 16);
-        }
-
-        setCurrentTime();
 
         // Adjust font size on page load
         adjustFontSize();
@@ -206,8 +185,6 @@
 
         // Update display
         function updateDisplay() {
-            if (!meetingActive) return;
-
             const now = new Date();
             const elapsedMilliseconds = now - startTime;
             const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
@@ -225,68 +202,14 @@
             adjustFontSize();
         }
 
-        // Toggle meeting start/stop
-        toggleButton.addEventListener('click', function() {
-            if (!meetingActive) {
-                // Update start time to now when clicking Start
-                setCurrentTime();
+        // Start the timer immediately
+        updateDisplay();
+        intervalId = setInterval(updateDisplay, 100);
 
-                // Start meeting
-                const selectedTime = new Date(startTimeInput.value);
-
-                if (isNaN(selectedTime.getTime())) {
-                    alert('Please select a valid start time');
-                    return;
-                }
-
-                startTime = selectedTime;
-                meetingActive = true;
-
-                toggleButton.textContent = 'Stop';
-                toggleButton.classList.add('running');
-
-                // Update immediately
-                updateDisplay();
-
-                // Update 10 times per second for drama
-                intervalId = setInterval(updateDisplay, 100);
-            } else {
-                // Stop meeting
-                meetingActive = false;
-
-                if (intervalId) {
-                    clearInterval(intervalId);
-                    intervalId = null;
-                }
-
-                toggleButton.textContent = 'Start';
-                toggleButton.classList.remove('running');
-
-                // Final update
-                updateDisplay();
-            }
-        });
-
-        // Update cost calculation when inputs change (if meeting is active)
-        attendeesInput.addEventListener('input', function() {
-            if (meetingActive) updateDisplay();
-        });
-
-        meetingTypeSelect.addEventListener('change', function() {
-            if (meetingActive) updateDisplay();
-        });
-
-        customSalaryInput.addEventListener('input', function() {
-            if (meetingActive) updateDisplay();
-        });
-
-        // Update start time and recalculate when changed during active meeting
-        startTimeInput.addEventListener('change', function() {
-            if (meetingActive) {
-                startTime = new Date(startTimeInput.value);
-                updateDisplay();
-            }
-        });
+        // Update cost calculation when inputs change
+        attendeesInput.addEventListener('input', updateDisplay);
+        meetingTypeSelect.addEventListener('change', updateDisplay);
+        customSalaryInput.addEventListener('input', updateDisplay);
 
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
