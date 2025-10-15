@@ -27,7 +27,10 @@ jobs:
       - name: Inject git hash
         run: |
           GIT_HASH=$(git rev-parse --short HEAD)
+          echo "Git hash: $GIT_HASH"
           sed -i "s/__GIT_HASH__/$GIT_HASH/g" docs/index.html
+          echo "After replacement:"
+          grep "Build:" docs/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
