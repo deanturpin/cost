@@ -92,6 +92,12 @@
 
         setCurrentTime();
 
+        // Adjust font size on page load
+        adjustFontSize();
+
+        // Adjust font size on window resize
+        window.addEventListener('resize', adjustFontSize);
+
         // Show/hide custom salary input and update attendees based on meeting type
         meetingTypeSelect.addEventListener('change', function() {
             if (this.value === 'custom') {
@@ -166,28 +172,11 @@
             }
         }
 
-        // Update display
-        function updateDisplay() {
-            if (!meetingActive) return;
-
-            const now = new Date();
-            const elapsedMilliseconds = now - startTime;
-            const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
-            const cost = getCostPerSecond() * (elapsedMilliseconds / 1000); // Use precise milliseconds for cost
-
-            costAmount.textContent = formatCurrency(cost);
-            elapsedTime.textContent = formatTime(elapsedSeconds);
-
-            // Update intensity
-            const costDisplay = document.querySelector('.cost-display');
-            costDisplay.className = 'cost-display ' + getIntensityClass(cost);
-            costDisplay.style.background = getColourGradient(cost);
-
-            // Dynamically adjust font size based on number length to prevent overflow
+        // Adjust font size based on cost amount length
+        function adjustFontSize() {
             const costText = costAmount.textContent;
             const isMobile = window.innerWidth <= 600;
 
-            // Scale based on string length for desktop and mobile
             let fontSize;
 
             if (isMobile) {
@@ -213,6 +202,27 @@
             }
 
             costAmount.style.fontSize = fontSize + 'px';
+        }
+
+        // Update display
+        function updateDisplay() {
+            if (!meetingActive) return;
+
+            const now = new Date();
+            const elapsedMilliseconds = now - startTime;
+            const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
+            const cost = getCostPerSecond() * (elapsedMilliseconds / 1000); // Use precise milliseconds for cost
+
+            costAmount.textContent = formatCurrency(cost);
+            elapsedTime.textContent = formatTime(elapsedSeconds);
+
+            // Update intensity
+            const costDisplay = document.querySelector('.cost-display');
+            costDisplay.className = 'cost-display ' + getIntensityClass(cost);
+            costDisplay.style.background = getColourGradient(cost);
+
+            // Adjust font size to prevent overflow
+            adjustFontSize();
         }
 
         // Toggle meeting start/stop
