@@ -1,7 +1,8 @@
-const CACHE_NAME = 'meeting-cost-calc-v1';
+const CACHE_NAME = 'meeting-cost-calc-v2';
 const urlsToCache = [
   './',
   './index.html',
+  './style.css',
   './manifest.json'
 ];
 
