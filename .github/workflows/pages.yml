@@ -30,7 +30,7 @@ jobs:
           echo "Git hash: $GIT_HASH"
           sed -i "s/__GIT_HASH__/$GIT_HASH/g" docs/index.html
           echo "After replacement:"
-          grep "Build:" docs/index.html
+          grep "$GIT_HASH" docs/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
