@@ -88,6 +88,16 @@ h1 {
     animation: pulse 0.5s infinite;
 }
 
+/* Burn rate: the steady figure that explains how fast the total is climbing */
+.cost-rate {
+    font-size: 22px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+    margin-top: 12px;
+    letter-spacing: 1px;
+}
+
 .cost-time {
     font-size: 32px;
     opacity: 0.9;
@@ -152,6 +162,10 @@ input:focus, select:focus {
     .cost-display {
         padding: 50px 30px;
         min-height: 300px;
+    }
+
+    .cost-rate {
+        font-size: 16px;
     }
 
     .cost-time {

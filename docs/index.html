@@ -21,6 +21,7 @@
 
         <div class="cost-display">
             <div class="cost-amount" id="costAmount">£0.00</div>
+            <div class="cost-rate" id="costRate">£0.00/min</div>
             <div class="cost-time" id="elapsedTime">00:00:00</div>
         </div>
 
@@ -57,6 +58,7 @@
         // Constants
         const WORKING_HOURS_PER_YEAR = 2080; // 52 weeks × 5 days × 8 hours
         const SECONDS_PER_HOUR = 3600;
+        const SECONDS_PER_MINUTE = 60;
 
         // State
         let meetingActive = true; // Start immediately
@@ -66,6 +68,7 @@
         // Elements
         const costAmount = document.getElementById('costAmount');
         const elapsedTime = document.getElementById('elapsedTime');
+        const costRate = document.getElementById('costRate');
         const attendeesInput = document.getElementById('attendees');
         const meetingTypeSelect = document.getElementById('meetingType');
         const customSalaryGroup = document.getElementById('customSalaryGroup');
@@ -191,6 +194,7 @@
             const cost = getCostPerSecond() * (elapsedMilliseconds / 1000); // Use precise milliseconds for cost
 
             costAmount.textContent = formatCurrency(cost);
+            costRate.textContent = formatCurrency(getCostPerSecond() * SECONDS_PER_MINUTE) + '/min';
             elapsedTime.textContent = formatTime(elapsedSeconds);
 
             // Update intensity
