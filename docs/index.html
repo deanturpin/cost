@@ -49,7 +49,12 @@
             </div>
         </div>
 
-        <button type="button" class="pip-button" id="pipButton" aria-label="Float above other windows" title="Float above other windows" hidden>&#9707;</button>
+        <button type="button" class="pip-button" id="pipButton" aria-label="Float above other windows" title="Float above other windows" hidden>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
+                <rect x="1.5" y="3.5" width="21" height="17" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="11.5" y="10.5" width="9.5" height="8.5" rx="1.5" fill="currentColor"/>
+            </svg>
+        </button>
 
         <div style="text-align: center; margin-top: 20px; font-size: 11px;">
             <a href="https://github.com/deanturpin/cost/commit/__GIT_HASH__" target="_blank" style="color: #999; text-decoration: none;">__GIT_HASH__</a>
@@ -72,6 +77,7 @@
         const costRate = document.getElementById('costRate');
         const costDisplay = document.querySelector('.cost-display');
         const pipButton = document.getElementById('pipButton');
+        const controls = document.querySelector('.controls');
         const attendeesInput = document.getElementById('attendees');
         const meetingTypeSelect = document.getElementById('meetingType');
         const customSalaryGroup = document.getElementById('customSalaryGroup');
@@ -219,8 +225,6 @@
 
         // Picture-in-Picture gives an always-on-top window, so the counter can sit
         // over a video call. Chromium only, and it needs a gesture, hence the button.
-        const costDisplayAnchor = costDisplay.nextElementSibling;
-
         if ('documentPictureInPicture' in window) {
             pipButton.hidden = false;
             pipButton.addEventListener('click', function() {
@@ -235,7 +239,7 @@
                 return;
             }
 
-            const pip = await documentPictureInPicture.requestWindow({ width: 380, height: 260 });
+            const pip = await documentPictureInPicture.requestWindow({ width: 380, height: 480 });
 
             // A separate document, so it inherits none of our styling
             for (const sheet of document.styleSheets) {
@@ -247,14 +251,16 @@
             }
             pip.document.body.classList.add('pip-body');
 
-            // Move the live node rather than copying it, so it keeps ticking
-            pip.document.body.append(costDisplay);
+            // Move the live nodes rather than copying them, so the counter keeps
+            // ticking and the inputs keep their existing listeners
+            pip.document.body.append(costDisplay, controls);
             adjustFontSize();
             pip.addEventListener('resize', adjustFontSize);
 
-            // Put it back where it came from when the window is dismissed
+            // The button stays behind, so it doubles as the marker for where
+            // the two nodes belong when the window is dismissed
             pip.addEventListener('pagehide', function() {
-                costDisplayAnchor.before(costDisplay);
+                pipButton.before(costDisplay, controls);
                 adjustFontSize();
             });
         }
