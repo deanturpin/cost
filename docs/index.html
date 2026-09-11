@@ -49,6 +49,8 @@
             </div>
         </div>
 
+        <button type="button" class="pip-button" id="pipButton" aria-label="Float above other windows" title="Float above other windows" hidden>&#9707;</button>
+
         <div style="text-align: center; margin-top: 20px; font-size: 11px;">
             <a href="https://github.com/deanturpin/cost/commit/__GIT_HASH__" target="_blank" style="color: #999; text-decoration: none;">__GIT_HASH__</a>
         </div>
@@ -68,6 +70,8 @@
         const costAmount = document.getElementById('costAmount');
         const elapsedTime = document.getElementById('elapsedTime');
         const costRate = document.getElementById('costRate');
+        const costDisplay = document.querySelector('.cost-display');
+        const pipButton = document.getElementById('pipButton');
         const attendeesInput = document.getElementById('attendees');
         const meetingTypeSelect = document.getElementById('meetingType');
         const customSalaryGroup = document.getElementById('customSalaryGroup');
@@ -156,7 +160,7 @@
         // Adjust font size based on cost amount length
         function adjustFontSize() {
             const costText = costAmount.textContent;
-            const isMobile = window.innerWidth <= 600;
+            const isMobile = costAmount.ownerDocument.defaultView.innerWidth <= 600;
 
             let fontSize;
 
@@ -197,7 +201,6 @@
             elapsedTime.textContent = formatTime(elapsedSeconds);
 
             // Update intensity
-            const costDisplay = document.querySelector('.cost-display');
             costDisplay.className = 'cost-display ' + getIntensityClass(cost);
             costDisplay.style.background = getColourGradient(cost);
 
@@ -213,6 +216,48 @@
         attendeesInput.addEventListener('input', updateDisplay);
         meetingTypeSelect.addEventListener('change', updateDisplay);
         customSalaryInput.addEventListener('input', updateDisplay);
+
+        // Picture-in-Picture gives an always-on-top window, so the counter can sit
+        // over a video call. Chromium only, and it needs a gesture, hence the button.
+        const costDisplayAnchor = costDisplay.nextElementSibling;
+
+        if ('documentPictureInPicture' in window) {
+            pipButton.hidden = false;
+            pipButton.addEventListener('click', function() {
+                openFloatingWindow().catch(err => console.error('Could not open floating window:', err));
+            });
+        }
+
+        async function openFloatingWindow() {
+            // Asking twice would throw, so treat a second press as a toggle
+            if (documentPictureInPicture.window) {
+                documentPictureInPicture.window.close();
+                return;
+            }
+
+            const pip = await documentPictureInPicture.requestWindow({ width: 380, height: 260 });
+
+            // A separate document, so it inherits none of our styling
+            for (const sheet of document.styleSheets) {
+                if (!sheet.href) continue;
+                const link = pip.document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = sheet.href;
+                pip.document.head.append(link);
+            }
+            pip.document.body.classList.add('pip-body');
+
+            // Move the live node rather than copying it, so it keeps ticking
+            pip.document.body.append(costDisplay);
+            adjustFontSize();
+            pip.addEventListener('resize', adjustFontSize);
+
+            // Put it back where it came from when the window is dismissed
+            pip.addEventListener('pagehide', function() {
+                costDisplayAnchor.before(costDisplay);
+                adjustFontSize();
+            });
+        }
 
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {

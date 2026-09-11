@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meeting-cost-calc-v2';
+const CACHE_NAME = 'meeting-cost-calc-v3';
 const urlsToCache = [
   './',
   './index.html',
